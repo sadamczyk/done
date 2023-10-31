@@ -87,7 +87,18 @@ function __done_get_focused_window_id
     else if begin
             test "$XDG_SESSION_DESKTOP" = gnome; and type -q gdbus
         end
-        gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell --method org.gnome.Shell.Eval 'global.display.focus_window.get_id()'
+
+        if test "$XDG_SESSION_TYPE" = wayland
+            and type -q gnome-extensions
+            and gnome-extensions info -q focused-window-dbus@flexagoon.com >/dev/null 2>&1
+            gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/shell/extensions/FocusedWindow --method org.gnome.shell.extensions.FocusedWindow.Get \
+                # Remove any " or \ characters to prevent invalid JSON
+                | sed 's/\\\\\\\\\\\\"//g' | sed "s/\\\\//g" \
+                # gdbus call surrounds the JSON object with (' and ',) so remove that
+                | cut -c 3- | rev | cut -c 4- | rev | jq .id
+        else
+            gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell --method org.gnome.Shell.Eval 'global.display.focus_window.get_id()'
+        end
     else if type -q xprop
         and test -n "$DISPLAY"
         # Test that the X server at $DISPLAY is running
