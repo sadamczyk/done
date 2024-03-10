@@ -92,7 +92,7 @@ function __done_get_focused_window_id
             and type -q gnome-extensions
             and gnome-extensions info -q focused-window-dbus@flexagoon.com >/dev/null 2>&1
             gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/shell/extensions/FocusedWindow --method org.gnome.shell.extensions.FocusedWindow.Get \
-                | grep -Eo '"id":[[:digit:]]+,' | grep -Eo '[[:digit:]]+'
+                | grep -Po '"id":\K\d+'
         else
             gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell --method org.gnome.Shell.Eval 'global.display.focus_window.get_id()'
         end
